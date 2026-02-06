@@ -2,6 +2,8 @@ package com.example.lab5_starter;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -31,6 +33,9 @@ public class MainActivity extends AppCompatActivity implements CityDialogFragmen
 
     private CollectionReference citiesRef;
 
+    private Integer deletePosition;
+    private Button deleteCityButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements CityDialogFragmen
 
         // Set views
         addCityButton = findViewById(R.id.buttonAddCity);
+        deleteCityButton=findViewById(R.id.buttonDeleteCity);
         cityListView = findViewById(R.id.listviewCities);
 
         // create city array
@@ -84,6 +90,24 @@ public class MainActivity extends AppCompatActivity implements CityDialogFragmen
             cityDialogFragment.show(getSupportFragmentManager(),"City Details");
         });
 
+        cityListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                deletePosition=i;
+            }
+        });
+
+        deleteCityButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(deletePosition!=null){
+                    City item=cityArrayAdapter.getItem(deletePosition);
+                    //assert item != null;
+                    deleteCity(item);
+                }
+            }
+        });
+
     }
 
     @Override
@@ -102,6 +126,14 @@ public class MainActivity extends AppCompatActivity implements CityDialogFragmen
 
         DocumentReference docRef = citiesRef.document(city.getName());
         docRef.set(city);
+    }
+
+    public void deleteCity(City city){
+        DocumentReference docRef=citiesRef.document(city.getName());
+
+        cityArrayList.remove(city);
+        cityArrayAdapter.notifyDataSetChanged();
+        docRef.delete();
     }
 
     public void addDummyData(){
